@@ -1,0 +1,77 @@
+#Dataset: https://docs.google.com/spreadsheets/d/1uWOPzBgV13vsLo7lzslK4p-FjgdOO4ZynIi5KU6dfJs/edit?usp=sharing
+#Prepare:
+library(readxl)
+VECMdata <- read_excel("GitHub_VECM_R.xlsx")
+library(tsDyn)
+library(urca)
+library(forecast)
+library(tseries)
+library(vars)
+library(tidyverse)
+library(e1071)
+
+#Description:
+str(VECMdata)
+min(VECMdata$vni)
+max(VECMdata$vni)
+min(VECMdata$er)
+max(VECMdata$er)
+min(VECMdata$ir)
+max(VECMdata$ir)
+mean(VECMdata$vni)
+mean(VECMdata$er)
+mean(VECMdata$ir)
+median(VECMdata$vni)
+median(VECMdata$er)
+median(VECMdata$ir)
+sd(VECMdata$vni)
+sd(VECMdata$er)
+sd(VECMdata$ir)
+skewness(VECMdata$vni)
+skewness(VECMdata$er)
+skewness(VECMdata$ir)
+kurtosis(VECMdata$vni)
+kurtosis(VECMdata$er)
+kurtosis(VECMdata$ir)
+
+#Input:
+VNI <- ts(VECMdata$vni)
+ER <- ts(VECMdata$er)
+IR <- ts(VECMdata$ir)
+vni <- log(VNI)
+er <- log(ER)
+ir <- log(IR)
+
+#Stationarity:
+adf.test(vni)
+adf.test(er)
+adf.test(ir)
+d.vni <- diff(vni)
+d.er <- diff(er)
+d.ir <- diff(ir)
+adf.test(d.vni)
+adf.test(d.er)
+adf.test(d.ir)
+
+#Lag optimal:
+data_matrix <- cbind(vni,er,ir)
+lag_selection <- VARselect(data_matrix, lag.max = 12, type = "const")
+lag_selection$criteria
+lag_selection$selection
+
+#Cointegration:
+cointegration <- ca.jo(data_matrix, ecdet="const", type = "trace", K =5)
+summary(cointegration)
+vni_er <- cbind(vni,er)
+vni_ir <- cbind(vni, ir)
+er_ir <- cbind(er,ir)
+cointegration1 <- ca.jo(vni_er, ecdet="const", type = "trace", K =5)
+summary(cointegration1)
+cointegration2 <- ca.jo(vni_ir, ecdet="const", type = "trace", K =5)
+summary(cointegration2)
+cointegration3 <- ca.jo(er_ir, ecdet="const", type = "trace", K =5)
+summary(cointegration3)
+
+#VECM:
+vecmodel_j <- VECM(data_matrix, lag=4, r=2, estim="ML")
+summary(vecmodel_j)
