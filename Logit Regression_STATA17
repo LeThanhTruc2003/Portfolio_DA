@@ -1,0 +1,27 @@
+#import data (link: https://docs.google.com/spreadsheets/d/1jurtt_fBi4_MfiFIbb8J2NzZwllZBZjoMScDTOJY6Bo/edit?usp=sharing) 
+
+#Prepare data:
+encode Company, generate(company)
+xtset company Year
+rename EarningPerShare eps
+rename CashFlowfromInvesting investingCF
+rename CashFlowfromOperating operatingCF
+rename CashFlowfromFinancialActivit financingCF
+rename CurrentRatio currentratio
+rename DebtEquityRatio DEratio
+rename ROE roe
+rename ROA roa
+rename ROI roi
+rename ReturnonTangibleEquity rote
+rename InflationRateinUS inflation
+generate FCF = (FreeCashFlowperShare >= 0)
+
+#Descriptive statistics:
+summarize FCF eps operatingCF investingCF financingCF currentratio DEratio roe roa roi rote inflation
+
+#Logit regression:
+xtlogit FCF eps operatingCF investingCF financingCF currentratio DEratio roe roa roi rote inflation, re
+estimate store RE
+xtlogit FCF eps operatingCF investingCF financingCF currentratio DEratio roe roa roi rote inflation, fe
+estimate store FE
+hausman FE RE
